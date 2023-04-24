@@ -13,19 +13,74 @@ function cleanup {
 # registrar el manejador de señal para la señal SIGINT
 trap cleanup SIGINT
 
-tput civis  # ocultar el cursor
+# tput civis  # ocultar el cursor
+tput cnorm
 
-ITER=$1  # valor inicial de ITER
-N=$2  # valor inicial de N
-NUM_ITER=$3  # número de iteraciones del bucle
-FILE1=$4  # primer archivo a compilar
-FILE2=$5  # segundo archivo a compilar
+# Valores iniciales
+FILE1=
+FILE2=
+N=${N:-1000}
+ITER=${ITER:-1}
+NUM_ITER=${NUM_ITER:-100}
+
+# Opciones
+long_opts="f1:,f2:,n:,iter:,numiter:"
+
+# Parsear argumentos
+args=$(getopt -o '' --long "$long_opts" -- "$@")
+eval set -- "$args"
+
+while true; do
+  case "$1" in
+    --f1) FILE1=$2; shift 2;;
+    --f2) FILE2=$2; shift 2;;
+    --n) N=$2; shift 2;;
+    --iter) ITER=$2; shift 2;;
+    --numiter) NUM_ITER=$2; shift 2;;
+    --) shift; break;;
+    *) echo "Error: Argumento inválido"; exit 1;;
+  esac
+done
+
+# Comprobamos que se hayan introducido los argumentos obligatorios
+if [ -z "$FILE1" ] || [ -z "$FILE2" ]; then
+  echo "Debe proporcionar los nombres de archivo de entrada."
+  exit 1
+fi
+
+# Imprimimos los argumentos proporcionados
+echo "Archivo 1: $FILE1"
+echo "Archivo 2: $FILE2"
+echo "Número de iteraciones: $NUM_ITER"
+if [ -n "$ITER" ]; then
+  echo "Valor inicial de ITER: $ITER"
+fi
+if [ -n "$N" ]; then
+  printf "Valor inicial de N: $N\n"
+fi
+
 
 # Crea el directorio "assembly" si no existe
 if [ ! -d "assembly" ]; then
     mkdir assembly
     tput setaf 2
     printf "\nDIRECTORIO \"assembly\" CREADO CON EXITO\n"
+    tput sgr0
+fi
+
+# Crea el directorio "executables" si no existe
+if [ ! -d "executables" ]; then
+    mkdir executables
+    tput setaf 2
+    printf "DIRECTORIO \"executables\" CREADO CON EXITO\n"
+    tput sgr0
+fi
+
+# Crea el directorio "output" si no existe
+if [ ! -d "output" ]; then
+    mkdir output
+    tput setaf 2
+    printf "DIRECTORIO \"output\" CREADO CON EXITO\n"
     tput sgr0
 fi
 
@@ -70,14 +125,6 @@ else
     tput sgr0
 fi
 
-# Crea el directorio "executables" si no existe
-if [ ! -d "executables" ]; then
-    mkdir executables
-    tput setaf 2
-    printf "DIRECTORIO \"executables\" CREADO CON EXITO\n"
-    tput sgr0
-fi
-
 # compilar el primer archivo y generar el archivo ejecutable fichero1
 ERRORS=$(gcc "$FILE1" -O0 -o executables/"${FILE1%.*}" 2>&1 >/dev/null)
 
@@ -108,14 +155,6 @@ else
     exit 1
 fi
 
-# Crea el directorio "output" si no existe
-if [ ! -d "output" ]; then
-    mkdir output
-    tput setaf 2
-    printf "DIRECTORIO \"output\" CREADO CON EXITO\n"
-    tput sgr0
-fi
-
 # Comprueba si fichero1_out.txt existe
 if [ -e "output/${FILE1%.*}_out.txt" ]; then
   # Si existe, vacía su contenido
@@ -138,7 +177,7 @@ fi
 diff output/"${FILE1%.*}"_out.txt output/"${FILE2%.*}"_out.txt > output/output_diff.txt 2>&1
 if [ $? -ge 0 ]; then
     tput setaf 2
-    printf "ARCHIVO \"output/output_diff.txt\" CREADO CON EXITO\n"
+    printf "ARCHIVO \"output/output_diff.txt\" CREADO CON EXITO\n\n"
     tput sgr0
     chmod 777 output/output_diff.txt
 else
