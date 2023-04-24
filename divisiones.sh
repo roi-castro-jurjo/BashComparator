@@ -38,27 +38,26 @@ while true; do
     --iter) ITER=$2; shift 2;;
     --numiter) NUM_ITER=$2; shift 2;;
     --) shift; break;;
-    *) echo "Error: Argumento inválido"; exit 1;;
+    *) printf "\033[31mERROR: ARGUMENTO INVÁLIDO"; exit 1;;
   esac
 done
 
 # Comprobamos que se hayan introducido los argumentos obligatorios
 if [ -z "$FILE1" ] || [ -z "$FILE2" ]; then
-  echo "Debe proporcionar los nombres de archivo de entrada."
+  printf "\033[31mERROR: FALTAN FICHEROS DE ENTRADA"
   exit 1
 fi
 
 # Imprimimos los argumentos proporcionados
-echo "Archivo 1: $FILE1"
-echo "Archivo 2: $FILE2"
-echo "Número de iteraciones: $NUM_ITER"
+printf "\n\e[36mArchivo 1: \e[0m$FILE1\n"
+printf "\e[36mArchivo 2: \e[0m$FILE2\n"
+printf "\e[36mNúmero de iteraciones: \e[0m$NUM_ITER\n"
 if [ -n "$ITER" ]; then
-  echo "Valor inicial de ITER: $ITER"
+  printf "\e[36mValor inicial de ITER: \e[0m$ITER\n"
 fi
 if [ -n "$N" ]; then
-  printf "Valor inicial de N: $N\n"
+  printf "\e[36mValor inicial de N: \e[0m$N\n\n"
 fi
-
 
 # Crea el directorio "assembly" si no existe
 if [ ! -d "assembly" ]; then
