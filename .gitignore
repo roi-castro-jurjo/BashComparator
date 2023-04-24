@@ -6,3 +6,6 @@ fichero2_out.txt
 fichero1_out.txt
 noOpt.s
 Opt.s
+assembly/assembly_diff.txt
+assembly/noOpt.s
+assembly/Opt.s

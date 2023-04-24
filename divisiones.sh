@@ -21,6 +21,54 @@ NUM_ITER=$3  # número de iteraciones del bucle
 FILE1=$4  # primer archivo a compilar
 FILE2=$5  # segundo archivo a compilar
 
+# Crea el directorio "assembly" si no existe
+if [ ! -d "assembly" ]; then
+    mkdir assembly
+    tput setaf 2
+    printf "\nDIRECTORIO \"assembly\" CREADO CON EXITO"
+    tput sgr0
+fi
+
+# compilar el primer archivo y generar el archivo con el codigo assembly
+ERRORS=$(gcc "$FILE1" -S -o assembly/"${FILE1%.*}".s 2>&1 >/dev/null)
+
+if [ $? -eq 0 ]; then
+    tput setaf 2
+    printf "\n\"%s\" CREADO CON EXITO\n"  assembly/"${FILE1%.*}".s
+    tput sgr0
+else
+    tput setaf 1
+    printf "\nERROR AL CREAR \"%s\":\n"  assembly/"${FILE1%.*}".s
+    printf "%s\n\n" "$ERRORS"
+    tput sgr0
+fi
+
+# compilar el segundo archivo y generar el archivo con el codigo assembly
+ERRORS=$(gcc "$FILE2" -S -o assembly/"${FILE2%.*}".s 2>&1 >/dev/null)
+
+if [ $? -eq 0 ]; then
+    tput setaf 2
+    printf "\n\"%s\" CREADO CON EXITO\n"  assembly/"${FILE1%.*}".s
+    tput sgr0
+else
+    tput setaf 1
+    printf "\nERROR AL CREAR \"%s\":\n"  assembly/"${FILE1%.*}".s
+    printf "%s\n\n" "$ERRORS"
+    tput sgr0
+fi
+
+# Compara los dos archivos .s en el directorio "assembly" y guarda el resultado en un archivo llamado "assembly_diff.txt"
+diff assembly/"${FILE1%.*}".s assembly/"${FILE2%.*}".s > assembly/assembly_diff.txt 2>&1
+if [ $? -ge 0 ]; then
+    tput setaf 2
+    printf "\n\"assembly/assembly_diff.txt\" CREADO CON EXITO\n"
+    tput sgr0
+    chmod 777 assembly/assembly_diff.txt
+else
+    tput setaf 1
+    printf "\nERROR AL CREAR \"assembly/assembly_diff.txt\"\n"
+    tput sgr0
+fi
 # compilar el primer archivo y generar el archivo ejecutable fichero1
 ERRORS=$(gcc "$FILE1" -O0 -o fichero1 2>&1 >/dev/null)
 
@@ -154,7 +202,6 @@ printf "\e[36mTiempo medio por iteración del script:\e[0m $avg_runtime segundos
 speed_difference=$(echo "$total_runtime2 - $total_runtime1" | bc)
 
 # mostrar la diferencia de velocidad entre los dos archivos
-
 if (( $(echo "$total_runtime1 < $total_runtime2" |bc -l) )); then
     tput setaf 3
     printf "\nEL ARCHIVO \"%s\" ES %.6f SEGUNDOS MÁS RÁPIDO.\n\n" "$FILE1" $(echo "$speed_difference" | bc)
