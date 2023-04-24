@@ -1,0 +1,8 @@
+# Project exclude paths
+/cmake-build-debug/
+fichero1
+fichero2
+fichero2_out.txt
+fichero1_out.txt
+noOpt.s
+Opt.s
