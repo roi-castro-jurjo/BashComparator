@@ -9,3 +9,6 @@ Opt.s
 assembly/assembly_diff.txt
 assembly/noOpt.s
 assembly/Opt.s
+executables/*
+assembly/*
+output/*
