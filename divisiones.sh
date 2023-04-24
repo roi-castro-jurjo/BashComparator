@@ -17,8 +17,6 @@ trap cleanup SIGINT
 tput cnorm
 
 # Valores iniciales
-FILE1=
-FILE2=
 N=${N:-1000}
 ITER=${ITER:-1}
 NUM_ITER=${NUM_ITER:-100}
@@ -32,8 +30,8 @@ eval set -- "$args"
 
 while true; do
   case "$1" in
-    --f1) FILE1=$2; shift 2;;
-    --f2) FILE2=$2; shift 2;;
+    --f1) FILE1_PATH=$2; shift 2; FILE1_NAME=$(basename "$FILE1_PATH");;
+    --f2) FILE2_PATH=$2; shift 2; FILE2_NAME=$(basename "$FILE2_PATH");;
     --n) N=$2; shift 2;;
     --iter) ITER=$2; shift 2;;
     --numiter) NUM_ITER=$2; shift 2;;
@@ -43,14 +41,14 @@ while true; do
 done
 
 # Comprobamos que se hayan introducido los argumentos obligatorios
-if [ -z "$FILE1" ] || [ -z "$FILE2" ]; then
-  printf "\033[31mERROR: FALTAN FICHEROS DE ENTRADA"
+if [ -z "$FILE1_PATH" ] || [ -z "$FILE2_PATH" ]; then
+  printf "\033[31mERROR: FALTAN FICHEROS DE ENTRADA\n"
   exit 1
 fi
 
 # Imprimimos los argumentos proporcionados
-printf "\n\e[36mArchivo 1: \e[0m$FILE1\n"
-printf "\e[36mArchivo 2: \e[0m$FILE2\n"
+printf "\n\e[36mArchivo 1: \e[0m$FILE1_NAME\n"
+printf "\e[36mArchivo 2: \e[0m$FILE2_NAME\n"
 printf "\e[36mNúmero de iteraciones: \e[0m$NUM_ITER\n"
 if [ -n "$ITER" ]; then
   printf "\e[36mValor inicial de ITER: \e[0m$ITER\n"
@@ -84,35 +82,35 @@ if [ ! -d "output" ]; then
 fi
 
 # compilar el primer archivo y generar el archivo con el codigo assembly
-ERRORS=$(gcc "$FILE1" -S -o assembly/"${FILE1%.*}".s 2>&1 >/dev/null)
+ERRORS=$(gcc "$FILE1_PATH" -S -o assembly/"${FILE1_NAME%.*}".s 2>&1 >/dev/null)
 
 if [ $? -eq 0 ]; then
     tput setaf 2
-    printf "ARCHIVO \"%s\" CREADO CON EXITO\n"  assembly/"${FILE1%.*}".s
+    printf "ARCHIVO \"%s\" CREADO CON EXITO\n"  assembly/"${FILE1_NAME%.*}".s
     tput sgr0
 else
     tput setaf 1
-    printf "ERROR AL CREAR \"%s\":\n"  assembly/"${FILE1%.*}".s
+    printf "ERROR AL CREAR \"%s\":\n"  assembly/"${FILE1_NAME%.*}".s
     printf "%s\n\n" "$ERRORS"
     tput sgr0
 fi
 
 # compilar el segundo archivo y generar el archivo con el codigo assembly
-ERRORS=$(gcc "$FILE2" -S -o assembly/"${FILE2%.*}".s 2>&1 >/dev/null)
+ERRORS=$(gcc "$FILE2_PATH" -S -o assembly/"${FILE2_NAME%.*}".s 2>&1 >/dev/null)
 
 if [ $? -eq 0 ]; then
     tput setaf 2
-    printf "ARCHIVO \"%s\" CREADO CON EXITO\n"  assembly/"${FILE2%.*}".s
+    printf "ARCHIVO \"%s\" CREADO CON EXITO\n"  assembly/"${FILE2_NAME%.*}".s
     tput sgr0
 else
     tput setaf 1
-    printf "\nERROR AL CREAR \"%s\":\n"  assembly/"${FILE2%.*}".s
+    printf "\nERROR AL CREAR \"%s\":\n"  assembly/"${FILE2_NAME%.*}".s
     printf "%s\n\n" "$ERRORS"
     tput sgr0
 fi
 
 # Compara los dos archivos .s en el directorio "assembly" y guarda el resultado en un archivo llamado "assembly_diff.txt"
-diff assembly/"${FILE1%.*}".s assembly/"${FILE2%.*}".s > assembly/assembly_diff.txt 2>&1
+diff assembly/"${FILE1_NAME%.*}".s assembly/"${FILE2_NAME%.*}".s > assembly/assembly_diff.txt 2>&1
 if [ $? -ge 0 ]; then
     tput setaf 2
     printf "ARCHIVO \"assembly/assembly_diff.txt\" CREADO CON EXITO\n"
@@ -125,55 +123,55 @@ else
 fi
 
 # compilar el primer archivo y generar el archivo ejecutable fichero1
-ERRORS=$(gcc "$FILE1" -O0 -o executables/"${FILE1%.*}" 2>&1 >/dev/null)
+ERRORS=$(gcc "$FILE1_PATH" -O0 -o executables/"${FILE1_NAME%.*}" 2>&1 >/dev/null)
 
 if [ $? -eq 0 ]; then
     tput setaf 2
-    printf "ARCHIVO \"%s\" COMPILADO CON EXITO\n" "$FILE1"
+    printf "ARCHIVO \"%s\" COMPILADO CON EXITO\n" "$FILE1_NAME"
     tput sgr0
 else
     tput setaf 1
-    printf "\nERROR al compilar \"%s\":\n" "$FILE1"
+    printf "\nERROR al compilar \"%s\":\n" "$FILE1_NAME"
     printf "%s\n\n" "$ERRORS"
     tput sgr0
     exit 1
 fi
 
 # compilar el segundo archivo y generar el archivo ejecutable fichero2
-ERRORS=$(gcc "$FILE2" -O0 -o executables/"${FILE2%.*}" 2>&1 >/dev/null)
+ERRORS=$(gcc "$FILE2_PATH" -O0 -o executables/"${FILE2_NAME%.*}" 2>&1 >/dev/null)
 
 if [ $? -eq 0 ]; then
     tput setaf 2
-    printf "ARCHIVO \"%s\" COMPILADO CON EXITO\n" "$FILE2"
+    printf "ARCHIVO \"%s\" COMPILADO CON EXITO\n" "$FILE2_NAME"
     tput sgr0
 else
     tput setaf 1
-    printf "\nERROR al compilar \"%s\":\n" "$FILE2"
+    printf "\nERROR al compilar \"%s\":\n" "$FILE2_NAME"
     printf "%s\n\n" "$ERRORS"
     tput sgr0
     exit 1
 fi
 
 # Comprueba si fichero1_out.txt existe
-if [ -e "output/${FILE1%.*}_out.txt" ]; then
+if [ -e "output/${FILE1_NAME%.*}_out.txt" ]; then
   # Si existe, vacía su contenido
-  echo "" > "output/${FILE1%.*}_out.txt"
+  echo "" > "output/${FILE1_NAME%.*}_out.txt"
 else
   # Si no existe, crea el archivo vacío
-  touch "output/${FILE1%.*}_out.txt"
+  touch "output/${FILE1_NAME%.*}_out.txt"
 fi
 
 # Comprueba si fichero2_out.txt existe
-if [ -e "output/${FILE2%.*}_out.txt" ]; then
+if [ -e "output/${FILE2_NAME%.*}_out.txt" ]; then
   # Si existe, vacía su contenido
-  echo "" > "output/${FILE2%.*}_out.txt"
+  echo "" > "output/${FILE2_NAME%.*}_out.txt"
 else
   # Si no existe, crea el archivo vacío
-  touch "output/${FILE2%.*}_out.txt"
+  touch "output/${FILE2_NAME%.*}_out.txt"
 fi
 
 # Compara los dos archivos .s en el directorio "output" y guarda el resultado en un archivo llamado "output_diff.txt"
-diff output/"${FILE1%.*}"_out.txt output/"${FILE2%.*}"_out.txt > output/output_diff.txt 2>&1
+diff output/"${FILE1_NAME%.*}"_out.txt output/"${FILE2_NAME%.*}"_out.txt > output/output_diff.txt 2>&1
 if [ $? -ge 0 ]; then
     tput setaf 2
     printf "ARCHIVO \"output/output_diff.txt\" CREADO CON EXITO\n\n"
@@ -231,7 +229,7 @@ do
 
     # ejecutar el primer fichero con los valores actuales de ITER y N
     start1=$(date +%s.%N)
-    ./executables/"${FILE1%.*}" "$ITER" "$N" >> "output/${FILE1%.*}_out.txt"
+    ./executables/"${FILE1_NAME%.*}" "$ITER" "$N" >> "output/${FILE2_NAME%.*}_out.txt"
     end1=$(date +%s.%N)
     runtime1=$(echo "$end1 - $start1" | bc)
     total_runtime1=$(echo "$total_runtime1 + $runtime1" | bc)
@@ -239,7 +237,7 @@ do
 
     # ejecutar el segundo fichero con los valores actuales de ITER y N
     start2=$(date +%s.%N)
-    ./executables/"${FILE2%.*}" "$ITER" "$N" >> "output/${FILE2%.*}_out.txt"
+    ./executables/"${FILE2_NAME%.*}" "$ITER" "$N" >> "output/${FILE2_NAME%.*}_out.txt"
     end2=$(date +%s.%N)
     runtime2=$(echo "$end2 - $start2" | bc)
     total_runtime2=$(echo "$total_runtime2 + $runtime2" | bc)
@@ -251,12 +249,12 @@ do
 done
 
 # Imprimimos el tiempo total y medio por iteración de archivo1
-printf "\n\e[36mTiempo total de \"%s\":\e[0m $total_runtime1 segundos \033[0m\n" "$FILE1"
-printf "\e[36mTiempo medio por iteración de \"%s\":\e[0m $avg_runtime1 segundos\n\n" "$FILE1"
+printf "\n\e[36mTiempo total de \"%s\":\e[0m $total_runtime1 segundos \033[0m\n" "$FILE1_NAME"
+printf "\e[36mTiempo medio por iteración de \"%s\":\e[0m $avg_runtime1 segundos\n\n" "$FILE1_NAME"
 
 # Imprimimos el tiempo total y medio por iteración de archivo2
-printf "\e[36mTiempo total de \"%s\":\e[0m $total_runtime2 segundos\n" "$FILE2"
-printf "\e[36mTiempo medio por iteración de \"%s\":\e[0m $avg_runtime2 segundos\n\n" "$FILE2"
+printf "\e[36mTiempo total de \"%s\":\e[0m $total_runtime2 segundos\n" "$FILE2_NAME"
+printf "\e[36mTiempo medio por iteración de \"%s\":\e[0m $avg_runtime2 segundos\n\n" "$FILE2_NAME"
 
 # Imprimimos el tiempo total y medio por iteración del script completo
 end=$(date +%s.%N)
@@ -271,11 +269,11 @@ speed_difference=$(echo "$total_runtime2 - $total_runtime1" | bc)
 # mostrar la diferencia de velocidad entre los dos archivos
 if (( $(echo "$total_runtime1 < $total_runtime2" |bc -l) )); then
     tput setaf 3
-    printf "\nEL ARCHIVO \"%s\" ES %.6f SEGUNDOS MÁS RÁPIDO.\n\n" "$FILE1" $(echo "$speed_difference" | bc)
+    printf "\nEL ARCHIVO \"%s\" ES %.6f SEGUNDOS MÁS RÁPIDO.\n\n" "$FILE1_NAME" $(echo "$speed_difference" | bc)
     tput sgr0
 else
     tput setaf 2
-    printf "\nEL ARCHIVO \"%s\" ES %.6f SEGUNDOS MÁS RÁPIDO.\n\n" "$FILE2" $(echo "scale=6; -1 * $speed_difference" | bc)
+    printf "\nEL ARCHIVO \"%s\" ES %.6f SEGUNDOS MÁS RÁPIDO.\n\n" "$FILE2_NAME" $(echo "scale=6; -1 * $speed_difference" | bc)
     tput sgr0
 fi
 
