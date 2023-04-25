@@ -4,13 +4,18 @@
 
 int main(int argc, char *argv[]) {
 
-    if (argc != 3) {
-        printf("Se deben pasar 2 argumentos: ITER y N\n");
+    if (argc != 4) {
+        printf("Se deben pasar 3 argumentos: ITER, N, y el nombre del fichero.\n");
         return 1;
     }
 
     int ITER = atoi(argv[1]);
     int N = atoi(argv[2]);
+
+    FILE *fp;
+    char filename[50];
+    sprintf(filename, "plot/%s_data.txt", argv[3]); // construye el nombre del archivo
+    fp = fopen(filename, "a");
 
     struct timeval start, end;
     gettimeofday(&start, NULL);
@@ -42,6 +47,9 @@ int main(int argc, char *argv[]) {
     printf("d: %f\n", d);
     printf("e: %f\n", e);
     printf("-----------------------------------------------------\n");
+
+    fprintf(fp, "%d %d %f\n", j, i, elapsed_time);
+    fclose(fp);
 
     return 0;
 }

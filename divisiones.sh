@@ -13,8 +13,7 @@ function cleanup {
 # registrar el manejador de señal para la señal SIGINT
 trap cleanup SIGINT
 
-# tput civis  # ocultar el cursor
-tput cnorm
+tput civis  # ocultar el cursor
 
 # Valores iniciales
 N=${N:-1000}
@@ -81,6 +80,14 @@ if [ ! -d "output" ]; then
     tput sgr0
 fi
 
+# Crea el directorio "plot" si no existe
+if [ ! -d "plot" ]; then
+    mkdir plot
+    tput setaf 2
+    printf "DIRECTORIO \"plot\" CREADO CON EXITO\n"
+    tput sgr0
+fi
+
 # compilar el primer archivo y generar el archivo con el codigo assembly
 ERRORS=$(gcc "$FILE1_PATH" -S -o assembly/"${FILE1_NAME%.*}".s 2>&1 >/dev/null)
 
@@ -142,7 +149,7 @@ ERRORS=$(gcc "$FILE2_PATH" -O0 -o executables/"${FILE2_NAME%.*}" 2>&1 >/dev/null
 
 if [ $? -eq 0 ]; then
     tput setaf 2
-    printf "ARCHIVO \"%s\" COMPILADO CON EXITO\n" "$FILE2_NAME"
+    printf "ARCHIVO \"%s\" COMPILADO CON EXITO\n\n" "$FILE2_NAME"
     tput sgr0
 else
     tput setaf 1
@@ -170,18 +177,24 @@ else
   touch "output/${FILE2_NAME%.*}_out.txt"
 fi
 
-# Compara los dos archivos .s en el directorio "output" y guarda el resultado en un archivo llamado "output_diff.txt"
-diff output/"${FILE1_NAME%.*}"_out.txt output/"${FILE2_NAME%.*}"_out.txt > output/output_diff.txt 2>&1
-if [ $? -ge 0 ]; then
-    tput setaf 2
-    printf "ARCHIVO \"output/output_diff.txt\" CREADO CON EXITO\n\n"
-    tput sgr0
-    chmod 777 output/output_diff.txt
+# Comprueba si fichero1_data.txt existe
+if [ -e "plot/${FILE1_NAME%.*}_data.txt" ]; then
+  # Si existe, vacía su contenido
+  echo "" > "plot/${FILE1_NAME%.*}_data.txt"
 else
-    tput setaf 1
-    printf "\nERROR AL CREAR \"output/output_diff.txt\"\n"
-    tput sgr0
+  # Si no existe, crea el archivo vacío
+  touch "plot/${FILE1_NAME%.*}_data.txt"
 fi
+
+# Comprueba si fichero2_data.txt existe
+if [ -e "plot/${FILE2_NAME%.*}_data.txt" ]; then
+  # Si existe, vacía su contenido
+  echo "" > "plot/${FILE2_NAME%.*}_data.txt"
+else
+  # Si no existe, crea el archivo vacío
+  touch "plot/${FILE2_NAME%.*}_data.txt"
+fi
+
 
 # Medimos el tiempo total del script
 start=$(date +%s.%N)
@@ -229,7 +242,7 @@ do
 
     # ejecutar el primer fichero con los valores actuales de ITER y N
     start1=$(date +%s.%N)
-    ./executables/"${FILE1_NAME%.*}" "$ITER" "$N" >> "output/${FILE2_NAME%.*}_out.txt"
+    ./executables/"${FILE1_NAME%.*}" "$ITER" "$N" "${FILE1_NAME%.*}" >> "output/${FILE2_NAME%.*}_out.txt"
     end1=$(date +%s.%N)
     runtime1=$(echo "$end1 - $start1" | bc)
     total_runtime1=$(echo "$total_runtime1 + $runtime1" | bc)
@@ -237,7 +250,7 @@ do
 
     # ejecutar el segundo fichero con los valores actuales de ITER y N
     start2=$(date +%s.%N)
-    ./executables/"${FILE2_NAME%.*}" "$ITER" "$N" >> "output/${FILE2_NAME%.*}_out.txt"
+    ./executables/"${FILE2_NAME%.*}" "$ITER" "$N" "${FILE2_NAME%.*}" >> "output/${FILE2_NAME%.*}_out.txt"
     end2=$(date +%s.%N)
     runtime2=$(echo "$end2 - $start2" | bc)
     total_runtime2=$(echo "$total_runtime2 + $runtime2" | bc)
@@ -274,6 +287,19 @@ if (( $(echo "$total_runtime1 < $total_runtime2" |bc -l) )); then
 else
     tput setaf 2
     printf "\nEL ARCHIVO \"%s\" ES %.6f SEGUNDOS MÁS RÁPIDO.\n\n" "$FILE2_NAME" $(echo "scale=6; -1 * $speed_difference" | bc)
+    tput sgr0
+fi
+
+# Compara los dos archivos .s en el directorio "output" y guarda el resultado en un archivo llamado "output_diff.txt"
+diff output/"${FILE1_NAME%.*}"_out.txt output/"${FILE2_NAME%.*}"_out.txt > output/output_diff.txt 2>&1
+if [ $? -ge 0 ]; then
+    tput setaf 2
+    printf "ARCHIVO \"output/output_diff.txt\" CREADO CON EXITO\n\n"
+    tput sgr0
+    chmod 777 output/output_diff.txt
+else
+    tput setaf 1
+    printf "\nERROR AL CREAR \"output/output_diff.txt\"\n"
     tput sgr0
 fi
 
