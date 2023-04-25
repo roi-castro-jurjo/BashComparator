@@ -12,11 +12,6 @@ int main(int argc, char *argv[]) {
     int ITER = atoi(argv[1]);
     int N = atoi(argv[2]);
 
-    FILE *fp;
-    char filename[50];
-    sprintf(filename, "plot/%s_data.txt", argv[3]); // construye el nombre del archivo
-    fp = fopen(filename, "a");
-
     struct timeval start, end;
     gettimeofday(&start, NULL);
 
@@ -48,6 +43,10 @@ int main(int argc, char *argv[]) {
     printf("e: %f\n", e);
     printf("-----------------------------------------------------\n");
 
+    FILE *fp;
+    char filename[50];
+    sprintf(filename, "plot/%s_data.txt", argv[3]); // construye el nombre del archivo
+    fp = fopen(filename, "a");
     fprintf(fp, "%d %d %f\n", j, i, elapsed_time);
     fclose(fp);
 

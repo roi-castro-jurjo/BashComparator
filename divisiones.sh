@@ -391,10 +391,59 @@ fi
 # Continuar con el script si se desea generar gráficos
 if [[ $DOPLOT -eq 1 ]]; then
     # ... código para generar gráficos con GNUplot
+gnuplot <<- EOF
+  set terminal pngcairo enhanced font "arial,10" fontscale 1.0 size 1920, 1080
+  set output 'plot/surface_${FILE1_NAME%.*}.png'
+  set dgrid3d 30,30, 2
+  unset key
+  unset parametric
+  set view 75, 200, 1, 1
+  set hidden3d back offset 1 trianglepattern 3 undefined 1 altdiagonal bentover
+  set style data lines
+  set title '${FILE1_NAME%.*}: Comparación de tiempos de ejecución en base a ITER y N'
+  set xrange [ * : * ] noreverse writeback
+  set x2range [ * : * ] noreverse writeback
+  set yrange [ * : * ] noreverse writeback
+  set y2range [ * : * ] noreverse writeback
+  set zrange [ * : * ] noreverse writeback
+  set cbrange [ * : * ] noreverse writeback
+  set rrange [ * : * ] noreverse writeback
+  set colorbox vertical origin screen 0.9, 0.2 size screen 0.05, 0.6 front  noinvert bdefault
+  NO_ANIMATION = 1
+  set xlabel "ITER"
+  set zlabel "Tiempo"
+  set ylabel "N"
+  splot 'plot/${FILE1_NAME%.*}_data.txt' u 1:2:3 w l
+EOF
+
+gnuplot <<- EOF
+  set terminal pngcairo enhanced font "arial,10" fontscale 1.0 size 1920, 1080
+  set output 'plot/surface_${FILE2_NAME%.*}.png'
+  set dgrid3d 30,30, 2
+  unset key
+  unset parametric
+  set view 75, 200, 1, 1
+  set hidden3d back offset 1 trianglepattern 3 undefined 1 altdiagonal bentover
+  set style data lines
+  set title '${FILE2_NAME%.*}: Comparación de tiempos de ejecución en base a ITER y N'
+  set xrange [ * : * ] noreverse writeback
+  set x2range [ * : * ] noreverse writeback
+  set yrange [ * : * ] noreverse writeback
+  set y2range [ * : * ] noreverse writeback
+  set zrange [ * : * ] noreverse writeback
+  set cbrange [ * : * ] noreverse writeback
+  set rrange [ * : * ] noreverse writeback
+  set colorbox vertical origin screen 0.9, 0.2 size screen 0.05, 0.6 front  noinvert bdefault
+  NO_ANIMATION = 1
+  set xlabel "ITER"
+  set zlabel "Tiempo"
+  set ylabel "N"
+  splot 'plot/${FILE2_NAME%.*}_data.txt' u 1:2:3 w l
+EOF
+
     tput setaf 2
     echo -e "\nSe generaron los gráficos con GNUplot."
     tput sgr0
 fi
-
 
 tput cnorm  # restaurar el cursor normal
