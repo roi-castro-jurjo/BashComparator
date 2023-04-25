@@ -303,4 +303,61 @@ else
     tput sgr0
 fi
 
+# Preguntar al usuario si quiere generar gráficos con GNUplot
+read -p "¿Desea generar gráficos con GNUplot? [Y/N]: " GENERAR_GRAFICOS
+
+if [[ "$GENERAR_GRAFICOS" == "Y" || "$GENERAR_GRAFICOS" == "y" ]]; then
+  DOPLOT=1
+else
+  DOPLOT=0
+fi
+
+# Verificar si se está en un sistema Ubuntu o Debian
+if [[ "$(uname)" == "Linux" && "$(lsb_release -si)" == "Ubuntu" || "$(lsb_release -si)" == "Debian" ]]; then
+  # Verificar si GNUplot está instalado
+  if ! command -v gnuplot &> /dev/null; then
+    echo "GNUplot no está instalado."
+    # Preguntar al usuario si desea instalarlo
+    read -p "¿Desea instalar GNUplot? [Y/N]: " INSTALAR_GNUPLOT
+    if [[ "$INSTALAR_GNUPLOT" == "Y" || "$INSTALAR_GNUPLOT" == "y" ]]; then
+      # Instalar GNUplot con sudo
+      sudo apt-get update
+      sudo apt-get install gnuplot -y
+      echo "GNUplot ha sido instalado."
+    else
+      echo "No se ha instalado GNUplot."
+    fi
+  fi
+fi
+
+# Verificar si se está en un sistema macOS
+if [[ "$(uname)" == "Darwin" ]]; then
+  # Verificar si brew está instalado
+  if ! command -v brew &> /dev/null; then
+    echo "Homebrew no está instalado. Por favor, instale Homebrew para continuar."
+    exit 1
+  fi
+
+  # Verificar si GNUplot está instalado
+  if ! command -v gnuplot &> /dev/null; then
+    echo "GNUplot no está instalado."
+    # Preguntar al usuario si desea instalarlo
+    read -p "¿Desea instalar GNUplot? [Y/N]: " INSTALAR_GNUPLOT
+    if [[ "$INSTALAR_GNUPLOT" == "Y" || "$INSTALAR_GNUPLOT" == "y" ]]; then
+      # Instalar GNUplot con brew
+      brew install gnuplot
+      echo "GNUplot ha sido instalado."
+    else
+      echo "No se ha instalado GNUplot."
+    fi
+  fi
+fi
+
+# Continuar con el script si se desea generar gráficos
+if [[ $DOPLOT -eq 1 ]]; then
+  # ... código para generar gráficos con GNUplot
+  echo "Se generaron los gráficos con GNUplot."
+fi
+
+
 tput cnorm  # restaurar el cursor normal
