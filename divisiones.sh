@@ -14,12 +14,6 @@ function cleanup {
 # registrar el manejador de señal para la señal SIGINT
 trap cleanup SIGINT
 
-GREEN="\033[32m"
-RED="\033[31m"
-YELLOW="\033[33m"
-CYAN="\e[36m"
-DEFAULT="\e[0m"
-
 tput civis  # ocultar el cursor
 
 # Valores iniciales
