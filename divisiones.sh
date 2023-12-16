@@ -384,7 +384,6 @@ fi
 
 # Continuar con el script si se desea generar gráficos
 if [[ $DOPLOT -eq 1 ]]; then
-    # ... código para generar gráficos con GNUplot
 gnuplot <<- EOF
   set terminal pngcairo enhanced font "arial,10" fontscale 1.0 size 1920, 1080
   set output 'plot/surface_${FILE1_NAME%.*}.png'
